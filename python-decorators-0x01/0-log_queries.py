@@ -6,10 +6,9 @@ import functools
 def log_queries(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        # Log the query if it's passed as an argument
         query = kwargs.get('query') or (args[0] if args else None)
         if query:
-            print(f"[LOG] Executing query: {query}")
+            print(f"Executing SQL query: {query}")
         return func(*args, **kwargs)
     return wrapper
 
@@ -23,7 +22,5 @@ def fetch_all_users(query):
     return results
 
 # Fetch users while logging the query
-if __name__ == "__main__":
-    users = fetch_all_users(query="SELECT * FROM users")
-    for user in users:
-        print(user)
+users = fetch_all_users(query="SELECT * FROM users")
+print(users)
