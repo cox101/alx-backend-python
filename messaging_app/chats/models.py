@@ -1,29 +1,39 @@
 #!/usr/bin/env python
-from django.contrib.auth.models import AbstractUser
+import uuid
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
-# Custom User model
+# Custom User Model
 class User(AbstractUser):
-    # You can extend with additional fields here if needed
-    # e.g., phone_number = models.CharField(max_length=15, blank=True)
-    pass
+    user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    email = models.EmailField(unique=True)
+    password = models.CharField(max_length=128)
+    first_name = models.CharField(max_length=150)
+    last_name = models.CharField(max_length=150)
 
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
 
+    def __str__(self):
+        return self.email
+
+# Conversation Model
 class Conversation(models.Model):
+    conversation_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     participants = models.ManyToManyField(User, related_name='conversations')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        participant_usernames = ", ".join([user.username for user in self.participants.all()])
-        return f"Conversation between: {participant_usernames}"
+        return f"Conversation {self.conversation_id}"
 
-
+# Message Model
 class Message(models.Model):
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages')
-    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
-    content = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
+    message_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
+    message_body = models.TextField()
+    sent_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.sender.username}: {self.content[:30]}"
-    
+        return f"From {self.sender.email} at {self.sent_at}"
+
