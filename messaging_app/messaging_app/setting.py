@@ -49,6 +49,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+
 # === REST FRAMEWORK CONFIG ===
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [

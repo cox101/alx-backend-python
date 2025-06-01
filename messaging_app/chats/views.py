@@ -44,3 +44,4 @@ class MessageViewSet(viewsets.ReadOnlyModelViewSet):
         if conversation_id:
             return self.queryset.filter(conversation__id=conversation_id)
         return self.queryset
+
