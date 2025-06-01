@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 INSTALLED_APPS = [
 
     'rest_framework',
