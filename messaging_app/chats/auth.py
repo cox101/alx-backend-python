@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
