@@ -7,7 +7,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('chats.urls')),  # Include your app's routes
     path('api-auth/', include('rest_framework.urls')),  # Enable browsable API login/logout
-        path('admin/', admin.site.urls),
     path('api/auth/', include(auth)),            # JWT auth endpoints: /api/auth/token/, /api/auth/token/refresh/
     path('api/chats/', include('messaging_app.chats.urls')),  # Your chat app API endpoints
 ]
