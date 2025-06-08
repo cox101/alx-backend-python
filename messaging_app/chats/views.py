@@ -6,6 +6,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from rest_framework import viewsets 
 from rest_framework.response import Response
+from .models import Message
+from .serializers import MessageSerializer
+from .permissions import IsParticipantOfConversation
 
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()
@@ -34,4 +37,12 @@ class ConversationViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+class MessageViewSet(viewsets.ModelViewSet):
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+    permission_classes = [IsParticipantOfConversation]
+
+    def get_queryset(self):
+        # Filter messages to only conversations the user is part of
+        return self.queryset.filter(conversation__participants=self.request.user)
 
