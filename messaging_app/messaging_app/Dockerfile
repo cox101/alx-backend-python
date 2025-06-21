@@ -21,9 +21,3 @@ EXPOSE 8000
 
 # Run the application
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
-
-Django==4.2
-djangorestframework==3.14.0
-gunicorn==21.2.0
-django-environ==0.11.2
-psycopg2-binary==2.9.9     # PostgreSQL adapter
