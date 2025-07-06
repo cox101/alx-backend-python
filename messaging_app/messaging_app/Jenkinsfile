@@ -14,7 +14,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git credentialsId: 'github-creds', url: 'https://github.com/YOUR_USERNAME/alx-backend-python.git'
+                git credentialsId: 'github-creds', url: 'https://github.com/cox101/alx-backend-python.git'
             }
         }
 
