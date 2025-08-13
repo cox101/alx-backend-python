@@ -1,0 +1,31 @@
+#!/bin/bash
+# 
+# Write a script, kurbeScript that:
+#     Starts a Kubernetes cluster on your machine
+#     verifies that the cluster is running using kubectl cluster-info.
+#     Retrieves the available pods
+
+# Ensure minikube is installed
+if ! command -v minikube &> /dev/null; then
+    echo "minikube could not be found. Please install it first."
+    exit 1
+fi
+# Start a Kubernetes cluster using minikube
+minikube start --driver=docker
+if [ $? -ne 0 ]; then
+    echo "Failed to start minikube. Please check your installation."
+    exit 1
+fi
+# Verify that the cluster is running
+kubectl cluster-info
+if [ $? -ne 0 ]; then
+    echo "Failed to verify the cluster. Please check your kubectl installation."
+    exit 1
+fi
+# Retrieve the available pods
+kubectl get pods --all-namespaces
+if [ $? -ne 0 ]; then
+    echo "Failed to retrieve pods. Please check your kubectl configuration."
+    exit 1
+fi
+echo "Kubernetes cluster is running and pods have been retrieved successfully."

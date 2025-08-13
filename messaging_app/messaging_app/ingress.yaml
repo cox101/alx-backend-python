@@ -1,0 +1,20 @@
+# route traffic to your messaging_app service.
+# Configure domain names or paths in the Ingress resource for different services (e.g., /api/ for the Django API).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: messaging-app-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: localhost #messaging-app.example.com 
+    http:
+      paths:
+        - path: /api/
+          pathType: Prefix
+          backend:
+            service:
+              name: messaging-app-service
+              port:
+                number: 8000

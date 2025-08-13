@@ -1,64 +1,91 @@
 pipeline {
     agent any
-
     environment {
-        VENV_DIR = "${env.WORKSPACE}/venv"
-        IMAGE_NAME = 'dockerhub_user/messaging-app' // Replace with your actual Docker Hub image name
-    }
-
-    options {
-        disableConcurrentBuilds()
-        buildDiscarder(logRotator(numToKeepStr: '5'))
-    }
-
-    stages {
-        stage('Clone Repository') {
-            steps {
-                git credentialsId: 'github-creds', url: 'https://github.com/cox101/alx-backend-python.git}
+            // Define environment variables
+            DOCKER_IMAGE = 'Cox101/alx-backend-python'
+            DOCKER_TAG = "${env.BUILD_ID}"
+            DOCKER_CREDENTIALS = 'docker-hub-credentials'
+            DOCKER_REGISTRY = 'docker.io'
         }
-
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout the specific branch from GitHub
+                git(
+                    credentialsId: 'github-credentials',
+                    url: 'https://github.com/Cox101/alx-backend-python.git',
+                    branch: 'main',
+                    changelog: true,
+                )
+                // Ensure we are on the correct branch
+                sh 'git branch --set-upstream-to=origin/main'
+            }
+        }
+        
         stage('Install Dependencies') {
             steps {
-                withPythonEnv("${VENV_DIR}") {
-                    sh 'pip install --upgrade pip'
-                    sh 'pip install -r messaging_app/requirements.txt'
-                }
+                // Install dependencies using pip
+                sh 'pip3 install -r messaging_app/requirements.txt'
             }
         }
-
+        
         stage('Run Tests') {
             steps {
-                withPythonEnv("${VENV_DIR}") {
-                    sh 'pytest messaging_app/tests/ --junitxml=test-results.xml'
-                }
-            }
-            post {
-                always {
-                    junit 'test-results.xml'
-                }
+                // Run tests using pytest and generate JUnit report
+                sh 'pytest --junitxml=report.xml'
             }
         }
-
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh """
-                    docker build -t ${IMAGE_NAME}:latest -f messaging_app/Dockerfile .
-                    """
+                    // Build Docker image
+                    docker.build("${env.DOCKER_IMAGE}:${env.DOCKER_TAG}")
                 }
             }
         }
-
+        
         stage('Push Docker Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh """
-                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                    docker push ${IMAGE_NAME}:latest
-                    docker logout
-                    """
+                script {
+                    // Authenticate with Docker Hub
+                    docker.withRegistry("https://${env.DOCKER_REGISTRY}", "${env.DOCKER_CREDENTIALS}") {
+                        // Push the built image
+                        docker.image("${env.DOCKER_IMAGE}:${env.DOCKER_TAG}").push()
+                        
+                        // Optionally push as 'latest'
+                        docker.image("${env.DOCKER_IMAGE}:${env.DOCKER_TAG}").push('latest')
+                    }
                 }
+            }
+        }
+        stage('Archive Results') {
+            steps {
+                // Archive the test report
+                junit 'report.xml'
+                archiveArtifacts artifacts: 'report.xml', fingerprint: true
             }
         }
     }
+    
+    post {
+        always {
+            // Clean up workspace after the build
+            cleanWs()
+        }
+        success {
+            // Notify success
+            echo 'Build succeeded!'
+            // You could add email or slack notification here
+        }
+        failure {
+            // Notify failure
+            echo 'Build failed!'
+            // You could add email or slack notification here
+        }
+    }
 }
+// This Jenkinsfile defines a pipeline that automates the process of pulling code, installing dependencies,
+// running tests, and generating a report for the messaging app. It includes stages for checking out the code,
+ // installing dependencies, running tests, and generating a report. The post section handles cleanup
+// and notifications based on the build outcome. The report is archived for later review.
+// The pipeline uses the `git` step to pull the code from GitHub, `sh` to run shell commands for installing dependencies and running tests, and `archiveArtifacts` to save the

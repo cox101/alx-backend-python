@@ -1,0 +1,43 @@
+#!/bin/bash
+# Write a bash script kubctl-0x03 that:
+
+#     Applies the updated deployment file and triggers a rolling update
+#     Monitors the update progress using kubectl rollout status
+#     Uses curl to test if the app experiences any downtime or disruption by continuously sending requests
+#     Verify the Rolling Update is Complete by checking the current pods
+# Ensure kubectl is installed
+if ! command -v kubectl &> /dev/null; then
+    echo "kubectl could not be found. Please install it first."
+    exit 1
+fi
+# Apply the updated green deployment
+kubectl apply -f green_deployment.yaml
+if [ $? -ne 0 ]; then
+    echo "Failed to apply the green deployment. Please check your kubectl configuration."
+    exit 1
+fi
+# Monitor the update progress
+kubectl rollout status deployment/messaging-app-green
+if [ $? -ne 0 ]; then
+    echo "Rolling update failed. Please check your kubectl configuration."
+    exit 1
+fi
+# Test the app for downtime or disruption
+while true; do
+    response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000)
+    if [ "$response" -ne 200 ]; then
+        echo "App is down or experiencing issues. HTTP status code: $response"
+        exit 1
+    else
+        echo "App is running smoothly. HTTP status code: $response"
+    fi
+    sleep 5
+done & # Run in the background to allow monitoring
+# Verify the rolling update is complete by checking the current pods
+kubectl get pods
+if [ $? -ne 0 ]; then
+    echo "Failed to retrieve pods. Please check your kubectl configuration."
+    exit 1
+fi
+echo "Rolling update applied successfully and app is running without downtime."
+# End of script

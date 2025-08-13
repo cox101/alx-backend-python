@@ -1,0 +1,27 @@
+# switch traffic from the blue version to the green version gradually
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: messaging-app-blue
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: messaging-app
+      version: blue
+  template:
+    metadata:
+      labels:
+        app: messaging-app
+        version: blue
+    spec:
+      containers:
+      - name: messaging-app
+        image: Cox101/messaging-app:blue # Replace with your blue version
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          value: postgres://user:password@postgres-service:5432/messaging_app
+        - name: REDIS_URL
+          value: redis://redis-service:6379 

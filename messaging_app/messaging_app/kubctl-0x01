@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# Write a script kubctl-0x01 if run achieves the following:
+#     Use kubectl scale to increase the number of replicas to 3 of your Django app deployment.
+#     Verify that multiple pods are running by using kubectl get pods.
+#     Perform load testing on your app using wrk to see how the scaled app handles traffic
+#     Monitors Resource Usage using kubectl top
+#     Clean up by deleting the deployment and service
+# Ensure kubectl is installed
+if ! command -v kubectl &> /dev/null; then
+    echo "kubectl could not be found. Please install it first."
+    exit 1
+fi
+# Ensure wrk is installed
+if ! command -v wrk &> /dev/null; then
+    echo "wrk could not be found. Please install it first."
+    exit 1
+fi
+# Scale the Django app deployment to 3 replicas
+kubectl scale deployment messaging_app --replicas=3
+if [ $? -ne 0 ]; then
+    echo "Failed to scale the deployment. Please check your kubectl configuration."
+    exit 1
+fi
+# Verify that multiple pods are running
+kubectl get pods
+if [ $? -ne 0 ]; then
+    echo "Failed to retrieve pods. Please check your kubectl configuration."
+    exit 1
+fi
+# Perform load testing on the app using wrk
+# Replace <service-ip> and <port> with your service's IP and port
+SERVICE_IP=$(kubectl get service messaging_app -o jsonpath='{.spec.clusterIP}')
+SERVICE_PORT=$(kubectl get service messaging_app -o jsonpath='{.spec.ports[0].port}')
+if [ -z "$SERVICE_IP" ] || [ -z "$SERVICE_PORT" ]; then
+    echo "Failed to retrieve service IP or port. Please check your service configuration."
+    exit 1
+fi
+wrk -t12 -c400 -d30s http://$SERVICE_IP:$SERVICE_PORT
+if [ $? -ne 0 ]; then
+    echo "Load testing failed. Please check your wrk configuration."
+    exit 1
+fi
+# Monitor resource usage
+kubectl top pods
+if [ $? -ne 0 ]; then
+    echo "Failed to monitor resource usage. Please check your kubectl configuration."
+    exit 1
+fi
+# Clean up by deleting the deployment and service
+kubectl delete deployment messaging_app
+kubectl delete service messaging_app
+if [ $? -ne 0 ]; then
+    echo "Failed to clean up resources. Please check your kubectl configuration."
+    exit 1
+fi
+echo "Kubernetes deployment scaled, load tested, monitored, and cleaned up successfully."

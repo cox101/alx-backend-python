@@ -1,0 +1,27 @@
+#Set up a blue-green deployment strategy in Kubernetes where you deploy a new version of the messaging_app (green_deployment.yaml)
+# and switch traffic to it using an Ingress resource.
+# Ensure that the new version is deployed alongside the existing one (blue deployment) and that traffic is gradually shifted to the new version.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: messaging-app-green
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: messaging-app
+      version: green
+  template:
+    metadata:
+      labels:
+        app: messaging-app
+        version: green
+    spec:
+      containers:
+      - name: messaging-app
+        image: Cox101/messaging-app:green
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          value: postgres://user:password@postgres-service:5432/messaging_app

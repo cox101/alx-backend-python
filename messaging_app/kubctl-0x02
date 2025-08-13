@@ -1,0 +1,34 @@
+#!/bin/bash
+# uses kubectl apply to deploy the blue and green version,
+#  and uses kubectl logs to check for errors in the new version
+# Ensure kubectl is installed
+if ! command -v kubectl &> /dev/null; then
+    echo "kubectl could not be found. Please install it first."
+    exit 1
+fi
+# Apply the blue deployment
+kubectl apply -f blue_deployment.yaml
+if [ $? -ne 0 ]; then
+    echo "Failed to apply the blue deployment. Please check your kubectl configuration."
+    exit 1
+fi
+# Apply the green deployment
+kubectl apply -f green_deployment.yaml
+if [ $? -ne 0 ]; then
+    echo "Failed to apply the green deployment. Please check your kubectl configuration."
+    exit 1
+fi
+# Check the logs of the blue deployment for errors
+kubectl logs deployment/messaging-app-blue
+if [ $? -ne 0 ]; then
+    echo "Failed to retrieve logs for the blue deployment. Please check your kubectl configuration."
+    exit 1
+fi
+# Check the logs of the green deployment for errors
+kubectl logs deployment/messaging-app-green
+if [ $? -ne 0 ]; then
+    echo "Failed to retrieve logs for the green deployment. Please check your kubectl configuration."
+    exit 1
+fi
+echo "Blue and green deployments applied successfully and logs checked for errors."
+# End of script

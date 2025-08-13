@@ -1,0 +1,51 @@
+
+# Create a deployment.yaml YAML file for your Django messaging app.
+
+# Define the Docker image to be used for the app in the deployment.yaml file.
+
+# Expose the Django app via a Service (use a ClusterIP service to keep it internal).
+
+# Apply the Deployment using kubectl apply -f deployment.yaml.
+
+# Verify that the app is running by checking the pods and logs (kubectl get pods, kubectl logs <pod-name>).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: messaging-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: messaging-app
+  template:
+    metadata:
+      labels:
+        app: messaging-app
+    spec:
+      containers:
+      - name: messaging-app
+        image: Cox101/messaging-app:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DB_HOST
+          value: "db-service"  
+        - name: DB_NAME
+          value: "messaging_db"  
+        - name: DB_USER
+          value: "messaging_user"
+        - name: DB_PASSWORD
+          value: "messaging_password"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: messaging-app-service
+spec:
+  type: ClusterIP
+  selector:
+    app: messaging-app
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
