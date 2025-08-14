@@ -1,14 +1,19 @@
 #!/usr/bin/env python
 from django.contrib import admin
 from django.urls import path, include
-from messaging_app.chats import auth
+from rest_framework_simplejwt.views import (TokenObtainPairView,
+                                            TokenRefreshView)
+# Import custom view for extended token functionality
+from chats.auth import CustomTokenObtainPairView
+
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('chats.urls')),  # Include your app's routes
-    path('api-auth/', include('rest_framework.urls')),  # Enable browsable API login/logout
-    path('api/auth/', include(auth)),            # JWT auth endpoints: /api/auth/token/, /api/auth/token/refresh/
-    path('api/chats/', include('messaging_app.chats.urls')),  # Your chat app API endpoints
+    path("admin/", admin.site.urls),
+    path('api/v1/', include('chats.urls')),
+    
+    path('api-auth/', include('rest_framework.urls')),
+    path('api-auth/', include('rest_framework.authtoken.urls')),
+    path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
-# This code sets up the main URL configuration for the Django project, including the admin interface and API routes for the messaging app.
-# It includes the admin site and the API routes defined in the `chats` app, allowing for easy access to the messaging functionality.
